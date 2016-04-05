@@ -1,0 +1,20 @@
+<TemplateGroup>
+  <Instances>
+    <Instance ID="Instanceada3f66e893d4b68ac20b5c5d5beb0c2" Type="Microsoft.SystemCenter.Authoring.CodeGeneration.Monitoring.PowerShellTask" Version="1.0.0.0">
+      <PowerShellTaskConfig xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+        <Script>Scripts\Invoke-SystemInfo.ps1</Script>
+        <ScriptParameters />
+        <ScriptSnapins />
+        <ScriptTimeout>300</ScriptTimeout>
+        <Accessibility>Internal</Accessibility>
+        <Id>Invoke.Systeminfo.Agent.Task</Id>
+        <DisplayName>Invoke Systeminfo - TaoYang</DisplayName>
+        <Description>Description for the new PowerShell task.</Description>
+        <Target>Windows!Microsoft.Windows.Computer</Target>
+        <Enabled>true</Enabled>
+        <Category>Operations</Category>
+        <Remotable>false</Remotable>
+      </PowerShellTaskConfig>
+    </Instance>
+  </Instances>
+</TemplateGroup>

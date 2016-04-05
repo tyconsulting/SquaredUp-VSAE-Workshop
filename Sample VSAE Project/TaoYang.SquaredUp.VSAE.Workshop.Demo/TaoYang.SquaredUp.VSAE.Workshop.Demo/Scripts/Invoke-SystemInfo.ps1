@@ -1,0 +1,1 @@
+﻿Invoke-Expression SystemInfo.exe

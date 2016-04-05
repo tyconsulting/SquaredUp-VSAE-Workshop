@@ -1,0 +1,100 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <ProjectGuid>{79b433ba-d556-47c6-a38f-d02521390773}</ProjectGuid>
+    <RootNamespace>TaoYang.SquaredUp.VSAE.Workshop.Demo</RootNamespace>
+    <Name>TaoYang SquaredUp VSAE Workshop Demo</Name>
+    <ManagementPackName>TaoYang.SquaredUp.VSAE.Workshop.Demo</ManagementPackName>
+    <Version>0.0.0.1</Version>
+    <MpFrameworkVersion>v7.0</MpFrameworkVersion>
+    <MpFrameworkProfile>OM</MpFrameworkProfile>
+    <ProductVersion>1.1.0.0</ProductVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug\</OutputPath>
+    <GenerateSealed>True</GenerateSealed>
+    <Company>TaoYang</Company>
+    <Copyright>Copyright (c) TaoYang. All rights reserved.</Copyright>
+    <DelaySigning>False</DelaySigning>
+    <AssemblyOriginatorKeyFile>C:\MPs\TaoYang.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <DebugSymbols>false</DebugSymbols>
+    <OutputPath>bin\Release\</OutputPath>
+    <DelaySigning>false</DelaySigning>
+    <Company>MyCompany</Company>
+    <Copyright>Copyright (c) MyCompany. All rights reserved.</Copyright>
+    <DelaySign>false</DelaySign>
+    <AssemblyOriginatorKeyFile />
+  </PropertyGroup>
+  <ItemGroup>
+    <ManagementPackReference Include="Microsoft.SQLServer.2014.Discovery">
+      <HintPath>C:\MPs\Microsoft.SQLServer.2014.Discovery.mp</HintPath>
+      <Alias>SQL2014Disc</Alias>
+      <MinVersion>6.6.4.0</MinVersion>
+      <PackageToBundle>False</PackageToBundle>
+    </ManagementPackReference>
+    <ManagementPackReference Include="Microsoft.SQLServer.Library">
+      <HintPath>C:\MPs\Microsoft.SQLServer.Library.mp</HintPath>
+      <Alias>SQL</Alias>
+      <MinVersion>6.6.4.0</MinVersion>
+      <PackageToBundle>False</PackageToBundle>
+    </ManagementPackReference>
+    <ManagementPackReference Include="Microsoft.SystemCenter.Library">
+      <Alias>SC</Alias>
+      <PackageToBundle>false</PackageToBundle>
+    </ManagementPackReference>
+    <ManagementPackReference Include="Microsoft.Windows.Library">
+      <Alias>Windows</Alias>
+      <PackageToBundle>false</PackageToBundle>
+    </ManagementPackReference>
+    <ManagementPackReference Include="System.Health.Library">
+      <Alias>Health</Alias>
+      <PackageToBundle>false</PackageToBundle>
+    </ManagementPackReference>
+    <ManagementPackReference Include="System.Library">
+      <Alias>System</Alias>
+      <PackageToBundle>false</PackageToBundle>
+    </ManagementPackReference>
+    <ManagementPackReference Include="Microsoft.SystemCenter.Visualization.Library">
+      <Alias>Visualization</Alias>
+      <PackageToBundle>false</PackageToBundle>
+    </ManagementPackReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="ManagementPack.mpx">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Modules\GetDBEngineLongRunningQueries.mpx">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tasks\SQL.DBEngine.GetLongRunningQueries.Task.mpx">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tasks\SQL2014.DBEngine.GetLongRunningQueries.Task.mpx">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tasks\SystemInfoTask.mptg.mpx">
+      <SubType>Code</SubType>
+      <DependentUpon>Tasks\SystemInfoTask.mptg</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Modules" />
+    <Folder Include="Tasks" />
+    <Folder Include="Scripts" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Scripts\GetDBEngineLongRunningQueries.ps1" />
+    <EmbeddedResource Include="Scripts\Invoke-SystemInfo.ps1" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Tasks\SystemInfoTask.mptg">
+      <SubType>Content</SubType>
+      <Generator>FragmentGenerator</Generator>
+    </Content>
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath)\Microsoft\VSAC\Microsoft.SystemCenter.OperationsManager.targets" />
+</Project>

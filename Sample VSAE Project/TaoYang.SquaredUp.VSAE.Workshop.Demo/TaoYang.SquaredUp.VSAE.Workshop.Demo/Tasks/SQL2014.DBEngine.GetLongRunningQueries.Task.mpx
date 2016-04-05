@@ -1,0 +1,25 @@
+﻿<ManagementPackFragment SchemaVersion="2.0" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Monitoring>
+    <Tasks>
+      <Task ID="TaoYang.SquaredUp.VSAE.Workshop.Demo.SQL2014.DB.Engine.Get.Long.Running.Queries.Task" Accessibility="Internal" Timeout="600" Enabled="true" Remotable="true" Target="SQL2014Disc!Microsoft.SQLServer.2014.DBEngine">
+        <Category>Operations</Category>
+        <WriteAction ID="WA" TypeID="TaoYang.SquaredUp.VSAE.Workshop.Demo.Get.DB.Engine.Long.Running.Queries.WA">
+          <ConnectionString>$Target/Property[Type="SQL2014Disc!Microsoft.SQLServer.2014.DBEngine"]/ConnectionString$</ConnectionString>
+          <TCPPort>$Target/Property[Type="SQL2014Disc!Microsoft.SQLServer.2014.DBEngine"]/TcpPort$</TCPPort>
+          <TopN>5</TopN>
+          <SQLQueryTimeoutSeconds>300</SQLQueryTimeoutSeconds>
+          <TimeoutSeconds>600</TimeoutSeconds>
+        </WriteAction>
+      </Task>
+    </Tasks>
+  </Monitoring>
+  <LanguagePacks>
+    <LanguagePack ID="ENU" IsDefault="true">
+      <DisplayStrings>
+        <DisplayString ElementID="TaoYang.SquaredUp.VSAE.Workshop.Demo.SQL2014.DB.Engine.Get.Long.Running.Queries.Task">
+          <Name>Get DB Engine Long Running Queries - TaoYang</Name>
+        </DisplayString>
+      </DisplayStrings>
+    </LanguagePack>
+  </LanguagePacks>
+</ManagementPackFragment>

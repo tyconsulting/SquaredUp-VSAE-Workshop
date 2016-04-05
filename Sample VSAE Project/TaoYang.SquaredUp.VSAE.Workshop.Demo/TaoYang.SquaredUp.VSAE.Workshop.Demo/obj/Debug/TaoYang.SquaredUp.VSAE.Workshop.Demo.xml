@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ManagementPack SchemaVersion="2.0" ContentReadable="true" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Manifest>
+    <Identity>
+      <ID>TaoYang.SquaredUp.VSAE.Workshop.Demo</ID>
+      <Version>0.0.0.5</Version>
+    </Identity>
+    <Name>TaoYang SquaredUp VSAE Workshop Demo</Name>
+    <References>
+      <Reference Alias="SQL2014Disc">
+        <ID>Microsoft.SQLServer.2014.Discovery</ID>
+        <Version>6.6.4.0</Version>
+        <PublicKeyToken>31bf3856ad364e35</PublicKeyToken>
+      </Reference>
+      <Reference Alias="SQL">
+        <ID>Microsoft.SQLServer.Library</ID>
+        <Version>6.6.4.0</Version>
+        <PublicKeyToken>31bf3856ad364e35</PublicKeyToken>
+      </Reference>
+      <Reference Alias="Windows">
+        <ID>Microsoft.Windows.Library</ID>
+        <Version>7.5.8501.0</Version>
+        <PublicKeyToken>31bf3856ad364e35</PublicKeyToken>
+      </Reference>
+      <Reference Alias="System">
+        <ID>System.Library</ID>
+        <Version>7.5.8501.0</Version>
+        <PublicKeyToken>31bf3856ad364e35</PublicKeyToken>
+      </Reference>
+    </References>
+  </Manifest>
+  <TypeDefinitions>
+    <ModuleTypes>
+      <WriteActionModuleType ID="TaoYang.SquaredUp.VSAE.Workshop.Demo.Get.DB.Engine.Long.Running.Queries.WA" Accessibility="Internal" Batching="false" RunAs="SQL!Microsoft.SQLServer.SQLDefaultAccount">
+        <Configuration>
+          <xsd:element name="ConnectionString" type="xsd:string" xmlns:xsd="http://www.w3.org/2001/XMLSchema" />
+          <xsd:element name="TCPPort" type="xsd:string" xmlns:xsd="http://www.w3.org/2001/XMLSchema" />
+          <xsd:element name="TopN" type="xsd:int" xmlns:xsd="http://www.w3.org/2001/XMLSchema" />
+          <xsd:element name="SQLQueryTimeoutSeconds" type="xsd:int" xmlns:xsd="http://www.w3.org/2001/XMLSchema" />
+          <xsd:element name="TimeoutSeconds" type="xsd:int" xmlns:xsd="http://www.w3.org/2001/XMLSchema" />
+        </Configuration>
+        <OverrideableParameters>
+          <OverrideableParameter ID="TopN" Selector="$Config/TopN$" ParameterType="int" />
+          <OverrideableParameter ID="SQLQueryTimeoutSeconds" Selector="$Config/SQLQueryTimeoutSeconds$" ParameterType="int" />
+          <OverrideableParameter ID="TimeoutSeconds" Selector="$Config/TimeoutSeconds$" ParameterType="int" />
+        </OverrideableParameters>
+        <ModuleImplementation>
+          <Composite>
+            <MemberModules>
+              <WriteAction ID="WA" TypeID="Windows!Microsoft.Windows.PowerShellWriteAction">
+                <ScriptName>GetDBEngineLongRunningQueries.ps1</ScriptName>
+                <ScriptBody><![CDATA[#=================================================================
+# AUTHOR:           Tao Yang
+# Script Name:      GetDBEngineLongRunningQueries.ps1
+# DATE:             28/09/2015
+# Version:          1.0
+# COMMENT:          - Script to get the long running queries on a SQL DB Engine
+#==============================================================
+Param ([string]$ConnectionString, [String]$TCPPort, [int]$TopN, [int]$SQLQueryTimeoutSeconds)
+
+$SQLQuery = @"
+SELECT TOP $TopN creation_time 
+        ,last_execution_time
+        ,total_physical_reads
+        ,total_logical_reads 
+        ,total_logical_writes
+        , execution_count
+        , total_worker_time
+        , total_elapsed_time
+        , total_elapsed_time / execution_count avg_elapsed_time
+        ,SUBSTRING(st.text, (qs.statement_start_offset/2) + 1,
+         ((CASE statement_end_offset
+          WHEN -1 THEN DATALENGTH(st.text)
+          ELSE qs.statement_end_offset END
+            - qs.statement_start_offset)/2) + 1) AS statement_text
+FROM sys.dm_exec_query_stats AS qs
+CROSS APPLY sys.dm_exec_sql_text(qs.sql_handle) st
+ORDER BY total_elapsed_time / execution_count DESC;
+"@
+#Connect to the DB engine
+If ($TCPPort -ne $NULL -AND $TCPPort -ne 0)
+{
+    $conString = "Server`=$ConnectionString,$TCPPort;Integrated Security=true;Initial Catalog=master"
+} else {
+    $conString = "Server`=$ConnectionString;Integrated Security=true;Initial Catalog=master"
+}
+
+Write-Output "Connection String: '$conString'"
+#Write-Output $SQLQuery
+$SQLCon = New-Object System.Data.SqlClient.SqlConnection
+$SQLCon.ConnectionString = $conString
+$SQLCon.Open()
+
+#execute SQL queries
+$sqlCmd = $SQLCon.CreateCommand()
+$sqlCmd.CommandTimeout=$SQLQueryTimeoutSeconds
+$SqlAdapter = New-Object System.Data.SqlClient.SqlDataAdapter
+
+#Alert Staging table
+$sqlCmd.CommandText = $SQLQuery
+$SqlAdapter.SelectCommand = $sqlCmd
+$DataSet = New-Object System.Data.DataSet
+$SqlAdapter.Fill($DataSet) | Out-Null
+
+#Close SQL Connection
+$SQLCon.Close()
+
+#Process result
+$arrSQLResult = New-Object System.Collections.ArrayList
+
+Foreach ($set in $DataSet.Tables[0])
+{
+    $objDS = New-object psobject
+    Foreach ($objProperty in (Get-member -InputObject $set -MemberType Property))
+    {
+        $PropertyName = $objProperty.Name
+        Add-Member -InputObject $objDS -MemberType NoteProperty -Name $PropertyName -Value $set.$PropertyName
+    }
+    [void]$arrSQLResult.Add($objDS)
+}
+Write-Output "Top $TopN Long Running Queries in the DB Engine:"
+Write-Output "------------------------------------"
+Foreach ($item in $arrSQLResult)
+{
+    Write-Output $item
+    Write-Output "------------------------------------"
+    Write-Output ""
+}
+]]></ScriptBody>
+                <Parameters>
+                  <Parameter>
+                    <Name>ConnectionString</Name>
+                    <Value>$Config/ConnectionString$</Value>
+                  </Parameter>
+                  <Parameter>
+                    <Name>TCPPort</Name>
+                    <Value>$Config/TCPPort$</Value>
+                  </Parameter>
+                  <Parameter>
+                    <Name>TopN</Name>
+                    <Value>$Config/TopN$</Value>
+                  </Parameter>
+                  <Parameter>
+                    <Name>SQLQueryTimeoutSeconds</Name>
+                    <Value>$Config/SQLQueryTimeoutSeconds$</Value>
+                  </Parameter>
+                </Parameters>
+                <TimeoutSeconds>$Config/TimeoutSeconds$</TimeoutSeconds>
+              </WriteAction>
+            </MemberModules>
+            <Composition>
+              <Node ID="WA" />
+            </Composition>
+          </Composite>
+        </ModuleImplementation>
+        <InputType>System!System.BaseData</InputType>
+      </WriteActionModuleType>
+    </ModuleTypes>
+  </TypeDefinitions>
+  <Monitoring>
+    <Tasks>
+      <Task ID="TaoYang.SquaredUp.VSAE.Workshop.Demo.DB.Engine.Get.Long.Running.Queries.Task" Accessibility="Internal" Timeout="600" Enabled="true" Remotable="true" Target="SQL!Microsoft.SQLServer.DBEngine">
+        <Category>Operations</Category>
+        <WriteAction ID="WA" TypeID="TaoYang.SquaredUp.VSAE.Workshop.Demo.Get.DB.Engine.Long.Running.Queries.WA">
+          <ConnectionString>$Target/Property[Type="SQL!Microsoft.SQLServer.DBEngine"]/ConnectionString$</ConnectionString>
+          <TCPPort>$Target/Property[Type="SQL!Microsoft.SQLServer.DBEngine"]/TcpPort$</TCPPort>
+          <TopN>5</TopN>
+          <SQLQueryTimeoutSeconds>300</SQLQueryTimeoutSeconds>
+          <TimeoutSeconds>600</TimeoutSeconds>
+        </WriteAction>
+      </Task>
+      <Task ID="TaoYang.SquaredUp.VSAE.Workshop.Demo.SQL2014.DB.Engine.Get.Long.Running.Queries.Task" Accessibility="Internal" Timeout="600" Enabled="true" Remotable="true" Target="SQL2014Disc!Microsoft.SQLServer.2014.DBEngine">
+        <Category>Operations</Category>
+        <WriteAction ID="WA" TypeID="TaoYang.SquaredUp.VSAE.Workshop.Demo.Get.DB.Engine.Long.Running.Queries.WA">
+          <ConnectionString>$Target/Property[Type="SQL2014Disc!Microsoft.SQLServer.2014.DBEngine"]/ConnectionString$</ConnectionString>
+          <TCPPort>$Target/Property[Type="SQL2014Disc!Microsoft.SQLServer.2014.DBEngine"]/TcpPort$</TCPPort>
+          <TopN>5</TopN>
+          <SQLQueryTimeoutSeconds>300</SQLQueryTimeoutSeconds>
+          <TimeoutSeconds>600</TimeoutSeconds>
+        </WriteAction>
+      </Task>
+      <Task ID="TaoYang.SquaredUp.VSAE.Workshop.Demo.Invoke.Systeminfo.Agent.Task" Accessibility="Internal" Target="Windows!Microsoft.Windows.Computer" Enabled="true" Timeout="300" Remotable="false">
+        <Category>Operations</Category>
+        <ProbeAction ID="Probe" TypeID="Windows!Microsoft.Windows.PowerShellProbe">
+          <ScriptName>Invoke-SystemInfo.ps1</ScriptName>
+          <ScriptBody><![CDATA[Invoke-Expression SystemInfo.exe]]></ScriptBody>
+          <SnapIns />
+          <Parameters />
+          <TimeoutSeconds>300</TimeoutSeconds>
+          <StrictErrorHandling>true</StrictErrorHandling>
+        </ProbeAction>
+      </Task>
+    </Tasks>
+  </Monitoring>
+  <LanguagePacks>
+    <LanguagePack ID="ENU" IsDefault="true">
+      <DisplayStrings>
+        <DisplayString ElementID="TaoYang.SquaredUp.VSAE.Workshop.Demo">
+          <Name>TaoYang SquaredUp VSAE Workshop Demo</Name>
+          <Description>This is a demo management pack created in the SquaredUp VSAE authoring workshop.</Description>
+        </DisplayString>
+        <DisplayString ElementID="TaoYang.SquaredUp.VSAE.Workshop.Demo.Get.DB.Engine.Long.Running.Queries.WA">
+          <Name>Get Database Engine Long Running Queries Write Action Module</Name>
+        </DisplayString>
+        <DisplayString ElementID="TaoYang.SquaredUp.VSAE.Workshop.Demo.Get.DB.Engine.Long.Running.Queries.WA" SubElementID="SQLQueryTimeoutSeconds">
+          <Name>SQL Query Timeout Seconds</Name>
+        </DisplayString>
+        <DisplayString ElementID="TaoYang.SquaredUp.VSAE.Workshop.Demo.Get.DB.Engine.Long.Running.Queries.WA" SubElementID="TimeoutSeconds">
+          <Name>Script Timeout Seconds</Name>
+        </DisplayString>
+        <DisplayString ElementID="TaoYang.SquaredUp.VSAE.Workshop.Demo.Get.DB.Engine.Long.Running.Queries.WA" SubElementID="TopN">
+          <Name>Number of Top Long Running Queries To Retrieve</Name>
+        </DisplayString>
+        <DisplayString ElementID="TaoYang.SquaredUp.VSAE.Workshop.Demo.DB.Engine.Get.Long.Running.Queries.Task">
+          <Name>Get DB Engine Long Running Queries - TaoYang</Name>
+        </DisplayString>
+        <DisplayString ElementID="TaoYang.SquaredUp.VSAE.Workshop.Demo.SQL2014.DB.Engine.Get.Long.Running.Queries.Task">
+          <Name>Get DB Engine Long Running Queries - TaoYang</Name>
+        </DisplayString>
+        <DisplayString ElementID="TaoYang.SquaredUp.VSAE.Workshop.Demo.Invoke.Systeminfo.Agent.Task">
+          <Name>Invoke Systeminfo - TaoYang</Name>
+          <Description>Description for the new PowerShell task.</Description>
+        </DisplayString>
+      </DisplayStrings>
+      <KnowledgeArticles></KnowledgeArticles>
+    </LanguagePack>
+  </LanguagePacks>
+</ManagementPack>

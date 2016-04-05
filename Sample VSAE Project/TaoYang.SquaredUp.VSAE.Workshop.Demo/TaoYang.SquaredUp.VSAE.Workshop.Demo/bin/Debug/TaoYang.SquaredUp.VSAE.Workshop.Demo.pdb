@@ -1,0 +1,12 @@
+Modules\GetDBEngineLongRunningQueries.mpx*TaoYang.SquaredUp.VSAE.Workshop.Demo.Get.DB.Engine.Long.Running.Queries.WA*4*8*WriteActionModuleType
+Tasks\SQL.DBEngine.GetLongRunningQueries.Task.mpx*TaoYang.SquaredUp.VSAE.Workshop.Demo.DB.Engine.Get.Long.Running.Queries.Task*4*8*Task
+Tasks\SQL2014.DBEngine.GetLongRunningQueries.Task.mpx*TaoYang.SquaredUp.VSAE.Workshop.Demo.SQL2014.DB.Engine.Get.Long.Running.Queries.Task*4*8*Task
+Tasks\SystemInfoTask.mptg.mpx*TaoYang.SquaredUp.VSAE.Workshop.Demo.Invoke.Systeminfo.Agent.Task*6*8*Task
+ManagementPack.mpx*TaoYang.SquaredUp.VSAE.Workshop.Demo*5*10*DisplayString
+Modules\GetDBEngineLongRunningQueries.mpx*TaoYang.SquaredUp.VSAE.Workshop.Demo.Get.DB.Engine.Long.Running.Queries.WA*56*10*DisplayString
+Modules\GetDBEngineLongRunningQueries.mpx*TaoYang.SquaredUp.VSAE.Workshop.Demo.Get.DB.Engine.Long.Running.Queries.WA*59*10*DisplayString*SubElementID*SQLQueryTimeoutSeconds
+Modules\GetDBEngineLongRunningQueries.mpx*TaoYang.SquaredUp.VSAE.Workshop.Demo.Get.DB.Engine.Long.Running.Queries.WA*62*10*DisplayString*SubElementID*TimeoutSeconds
+Modules\GetDBEngineLongRunningQueries.mpx*TaoYang.SquaredUp.VSAE.Workshop.Demo.Get.DB.Engine.Long.Running.Queries.WA*65*10*DisplayString*SubElementID*TopN
+Tasks\SQL.DBEngine.GetLongRunningQueries.Task.mpx*TaoYang.SquaredUp.VSAE.Workshop.Demo.DB.Engine.Get.Long.Running.Queries.Task*19*10*DisplayString
+Tasks\SQL2014.DBEngine.GetLongRunningQueries.Task.mpx*TaoYang.SquaredUp.VSAE.Workshop.Demo.SQL2014.DB.Engine.Get.Long.Running.Queries.Task*19*10*DisplayString
+Tasks\SystemInfoTask.mptg.mpx*TaoYang.SquaredUp.VSAE.Workshop.Demo.Invoke.Systeminfo.Agent.Task*22*10*DisplayString
